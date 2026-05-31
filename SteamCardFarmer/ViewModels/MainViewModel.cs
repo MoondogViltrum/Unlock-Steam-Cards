@@ -64,7 +64,9 @@ namespace SteamCardFarmer.ViewModels
         private readonly DispatcherTimer _checkTimer = new();
         private readonly DispatcherTimer _countdownTimer = new();
         private readonly DispatcherTimer _sessionTimer = new();
+        private readonly DispatcherTimer _autoRefreshTimer = new();
         private readonly List<Badge> _fastModeBadges = new();
+        private int _autoRefreshInterval = 15 * 60; // 15 minutes en secondes
         private CancellationTokenSource? _cts;
         private readonly string _steamIdlePath;
 
@@ -83,6 +85,13 @@ namespace SteamCardFarmer.ViewModels
                     StatusDetail = "Installe au moins un jeu Steam pour que l'app puisse le trouver automatiquement.";
                 }
             }
+
+            _autoRefreshTimer.Interval = TimeSpan.FromMinutes(15);
+            _autoRefreshTimer.Tick += async (_, _) =>
+            {
+                if (IsIdling && IsAuthenticated)
+                    await LoadBadgesAsync();
+            };
 
             _checkTimer.Interval = TimeSpan.FromSeconds(1);
             _checkTimer.Tick += CheckTimer_Tick;
@@ -164,6 +173,7 @@ namespace SteamCardFarmer.ViewModels
             Stats.ResetSession();
             Stats.TotalIdleTime = TimeSpan.Zero;
             _sessionTimer.Start();
+            _autoRefreshTimer.Start();
 
             if (IsFastMode)
                 StartFastMode();
@@ -177,6 +187,7 @@ namespace SteamCardFarmer.ViewModels
             _checkTimer.Stop();
             _countdownTimer.Stop();
             _sessionTimer.Stop();
+            _autoRefreshTimer.Stop();
 
             foreach (var b in Badges) b.StopIdle();
             _fastModeBadges.Clear();

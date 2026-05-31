@@ -52,6 +52,7 @@ L'app utilise tes cookies Steam pour accéder à ton profil.
 - 🔔 **Notifications** — alerte quand une carte tombe
 - 📊 **Statistiques** — cartes farmées, temps de session
 - 🌍 **8 langues** — FR, EN, ES, DE, IT, ZH, PT, JA
+- 🔄 **Auto-actualisation** — la liste se met à jour toutes les 15 minutes automatiquement
 - 🔒 **Réduit dans la barre** — continue en arrière-plan
 
 ---
