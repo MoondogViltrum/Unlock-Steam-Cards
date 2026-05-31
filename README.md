@@ -12,12 +12,25 @@
 
 ## 📥 Installation (1 minute)
 
-1. Va dans **[Releases](../../releases/latest)** et télécharge `UnlockSteamCards.zip`
-2. Extrais le zip où tu veux
-3. Lance **`UnlockSteamCards.exe`**
-
+> ### ⭐ Méthode recommandée — Installeur (le plus simple)
+> 1. Va dans **[Releases](../../releases/latest)**
+> 2. Télécharge **`UnlockSteamCards-Setup.exe`**
+> 3. Lance l'installeur et suis les étapes
+> 4. Un raccourci apparaît sur ton Bureau — clique dessus et c'est parti !
+>
 > ✅ Pas besoin d'installer .NET — tout est inclus.  
-> ✅ `steam_api64.dll` est détecté automatiquement depuis tes jeux Steam installés.
+> ✅ `steam_api64.dll` détecté automatiquement depuis tes jeux Steam.  
+> ✅ Fonctionne sur **tous les disques** (C:, D:, E:...).
+
+---
+
+## 🔒 100% Sûr et Transparent
+
+- ✅ **Code source ouvert** — tout le code est visible sur ce dépôt, rien de caché
+- ✅ **Aucune donnée collectée** — l'app ne communique qu'avec les serveurs Steam officiels
+- ✅ **Aucun mot de passe stocké** — seuls les cookies de session sont sauvegardés localement sur ton PC
+- ✅ **Utilisé par des millions** — basé sur Idle Master Extended, référence depuis 2013
+- ✅ **Pas de virus** — vérifie toi-même sur [VirusTotal](https://www.virustotal.com) si tu veux
 
 ---
 
