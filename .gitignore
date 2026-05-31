@@ -1,0 +1,15 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build outputs
+**/bin/
+**/obj/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Test files
+TEST_IDLE.bat
