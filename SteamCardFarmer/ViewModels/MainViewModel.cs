@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Threading;
 using SteamCardFarmer.Models;
 using SteamCardFarmer.Services;
+using System.Linq;
 
 
 
@@ -49,6 +50,11 @@ namespace SteamCardFarmer.ViewModels
 
         // ── Badge list ────────────────────────────────────────────────────────
         public ObservableCollection<Badge> Badges { get; } = new();
+        public ObservableCollection<HistoryEntry> History { get; } = new();
+
+        // ── Sort ──────────────────────────────────────────────────────────────
+        private string _sortMode = "hours"; // hours, cards, value
+        public string SortMode { get => _sortMode; set { _sortMode = value; OnPropertyChanged(); ApplySort(); } }
         private int _totalCards;
         private int _totalGames;
         public int TotalCards { get => _totalCards; set { _totalCards = value; OnPropertyChanged(); } }
@@ -73,18 +79,32 @@ namespace SteamCardFarmer.ViewModels
         public MainViewModel()
         {
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            _steamIdlePath = Path.Combine(baseDir, "steam-idle.exe");
+            // steam-idle est dans le sous-dossier idle\
+            var idleDir = Path.Combine(baseDir, "idle");
+            _steamIdlePath = Directory.Exists(idleDir)
+                ? Path.Combine(idleDir, "steam-idle.exe")
+                : Path.Combine(baseDir, "steam-idle.exe");
 
             // Auto-détecte et copie steam_api64.dll si manquant
-            if (!SteamApiHelper.IsReady(baseDir))
+            var idleFolder = Path.GetDirectoryName(_steamIdlePath)!;
+            if (!SteamApiHelper.IsReady(idleFolder))
             {
-                var found = SteamApiHelper.FindAndCopy(baseDir);
+                var found = SteamApiHelper.FindAndCopy(idleFolder);
                 if (found == null)
                 {
                     StatusText = "⚠ steam_api64.dll manquant";
-                    StatusDetail = "Installe au moins un jeu Steam pour que l'app puisse le trouver automatiquement.";
+                    StatusDetail = "Lance l'app une première fois avec Steam ouvert pour la configuration automatique.";
                 }
             }
+
+            // Charge l'historique sauvegardé
+            foreach (var h in HistoryService.Load().Take(100))
+                History.Add(h);
+
+            // Restaure les préférences son
+            SoundService.Enabled = Properties.Settings.Default.SoundEnabled;
+            SoundService.CurrentSound = Properties.Settings.Default.SoundKey ?? "soft";
+            SoundService.Volume = Properties.Settings.Default.SoundVolume > 0 ? Properties.Settings.Default.SoundVolume : 100;
 
             _autoRefreshTimer.Interval = TimeSpan.FromMinutes(15);
             _autoRefreshTimer.Tick += async (_, _) =>
@@ -150,18 +170,45 @@ namespace SteamCardFarmer.ViewModels
 
             var badges = await BadgeService.GetBadgesAsync(ProfileUrl);
 
+            // Chargement des prix en parallèle
+            StatusDetail = "Récupération des prix des cartes...";
+            var priceTasks = badges.Select(async b =>
+            {
+                b.AveragePrice = await PriceService.GetAverageCardPriceAsync(b.AppId);
+                return b;
+            });
+            await Task.WhenAll(priceTasks);
+
             foreach (var b in badges)
                 Badges.Add(b);
+
+            ApplySort();
 
             TotalCards = Badges.Sum(b => b.RemainingCards);
             TotalGames = Badges.Count;
 
             StatusText = TotalGames > 0
-                ? $"{TotalGames} jeu(x) trouvé(s) · {TotalCards} carte(s) restante(s)"
+                ? $"{TotalGames} jeu(x) · {TotalCards} carte(s) · {Badges.Sum(b => b.EstimatedValue):F2}€ estimés"
                 : "Aucun jeu avec des cartes à farmer";
             StatusDetail = TotalGames > 0 ? "Clique sur 'Démarrer' pour lancer le farming." : "Tous tes jeux sont farmés !";
 
             IsLoading = false;
+        }
+
+        private void ApplySort()
+        {
+            var sorted = _sortMode switch
+            {
+                "cards" => Badges.OrderByDescending(b => b.RemainingCards).ToList(),
+                "value" => Badges.OrderByDescending(b => b.EstimatedValue).ToList(),
+                _ => Badges.OrderBy(b => b.HoursPlayed).ToList() // hours (défaut)
+            };
+
+            for (int i = 0; i < sorted.Count; i++)
+            {
+                var cur = Badges.IndexOf(sorted[i]);
+                if (cur != i) Badges.Move(cur, i);
+            }
         }
 
         // ── Idle control ──────────────────────────────────────────────────────
@@ -287,6 +334,9 @@ namespace SteamCardFarmer.ViewModels
                     for (int i = 0; i < dropped; i++) Stats.AddCard();
                     TotalCards -= dropped;
                     ShowNotification($"🃏 Carte droppée !", $"{dropped} carte(s) obtenue(s) dans {CurrentBadge.Name}");
+                    SoundService.Play();
+                    HistoryService.Add(new HistoryEntry { GameName = CurrentBadge.Name, AppId = CurrentBadge.AppId, CardsDropped = dropped });
+                    History.Insert(0, new HistoryEntry { GameName = CurrentBadge.Name, AppId = CurrentBadge.AppId, CardsDropped = dropped });
                 }
 
                 CurrentBadge.RemainingCards = remaining;
@@ -318,6 +368,9 @@ namespace SteamCardFarmer.ViewModels
                     {
                         for (int i = 0; i < dropped; i++) Stats.AddCard();
                         ShowNotification("🃏 Carte droppée !", $"{dropped} carte(s) dans {badge.Name}");
+                        SoundService.Play();
+                        HistoryService.Add(new HistoryEntry { GameName = badge.Name, AppId = badge.AppId, CardsDropped = dropped });
+                        History.Insert(0, new HistoryEntry { GameName = badge.Name, AppId = badge.AppId, CardsDropped = dropped });
                     }
                     badge.RemainingCards = remaining;
                 }

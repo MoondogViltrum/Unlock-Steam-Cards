@@ -71,9 +71,14 @@ namespace SteamCardFarmer.Views
 
         private void Settings_Click(object sender, RoutedEventArgs e)
         {
-            var win = new SettingsWindow { Owner = this };
-            win.ShowDialog();
+            new SettingsWindow { Owner = this }.ShowDialog();
         }
+
+        private void History_Click(object sender, RoutedEventArgs e)
+        {
+            new HistoryWindow(_vm.History) { Owner = this }.ShowDialog();
+        }
+
 
         private void PriorityButton_Click(object sender, RoutedEventArgs e)
         {

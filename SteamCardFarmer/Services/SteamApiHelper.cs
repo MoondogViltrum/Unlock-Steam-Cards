@@ -45,24 +45,29 @@ namespace SteamCardFarmer.Services
         {
             var paths = new List<string>();
 
-            // Emplacements Steam par défaut
+            // 1. Registre Windows — trouve Steam peu importe le disque
+            var steamRoot = GetSteamPathFromRegistry();
+            if (!string.IsNullOrEmpty(steamRoot) && Directory.Exists(steamRoot))
+                paths.Add(steamRoot);
+
+            // 2. Emplacements par défaut en fallback
             var defaults = new[]
             {
                 @"C:\Program Files (x86)\Steam",
                 @"C:\Program Files\Steam",
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam"),
             };
-            paths.AddRange(defaults.Where(Directory.Exists));
+            foreach (var d in defaults.Where(Directory.Exists))
+                if (!paths.Contains(d)) paths.Add(d);
 
-            // Lit libraryfolders.vdf pour trouver les bibliothèques supplémentaires
-            foreach (var steamRoot in defaults.Where(Directory.Exists))
+            // 3. Lit libraryfolders.vdf pour les bibliothèques sur d'autres disques
+            foreach (var root in paths.ToList())
             {
-                var vdf = Path.Combine(steamRoot, "steamapps", "libraryfolders.vdf");
+                var vdf = Path.Combine(root, "steamapps", "libraryfolders.vdf");
                 if (!File.Exists(vdf)) continue;
 
                 foreach (var line in File.ReadAllLines(vdf))
                 {
-                    // Exemple : "path"  "E:\\Games\\Steam"
                     var match = System.Text.RegularExpressions.Regex.Match(line, @"""path""\s+""(.+?)""");
                     if (match.Success)
                     {
@@ -74,6 +79,27 @@ namespace SteamCardFarmer.Services
             }
 
             return paths;
+        }
+
+        private static string? GetSteamPathFromRegistry()
+        {
+            try
+            {
+                using var key = Microsoft.Win32.Registry.CurrentUser
+                    .OpenSubKey(@"Software\Valve\Steam");
+                return key?.GetValue("SteamPath")?.ToString()?.Replace('/', '\\');
+            }
+            catch { }
+
+            try
+            {
+                using var key = Microsoft.Win32.Registry.LocalMachine
+                    .OpenSubKey(@"SOFTWARE\WOW6432Node\Valve\Steam");
+                return key?.GetValue("InstallPath")?.ToString();
+            }
+            catch { }
+
+            return null;
         }
     }
 }

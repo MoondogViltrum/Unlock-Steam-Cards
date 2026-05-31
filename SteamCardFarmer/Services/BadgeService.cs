@@ -82,18 +82,40 @@ namespace SteamCardFarmer.Services
                 var remaining = int.Parse(cardsText);
                 if (remaining == 0) return null;
 
-                // Get game name — on prend le premier noeud texte direct du badge_title
-                var nameNode = node.SelectSingleNode(".//div[contains(@class,'badge_title')]");
+                // Get game name — plusieurs tentatives
                 var name = $"App {appId}";
+
+                // Tentative 1 : texte direct du badge_title
+                var nameNode = node.SelectSingleNode(".//div[contains(@class,'badge_title')]");
                 if (nameNode != null)
                 {
-                    // Le titre est dans le texte direct, pas dans les sous-noeuds (qui contiennent des boutons)
                     var rawText = nameNode.ChildNodes
                         .Where(n => n.NodeType == HtmlAgilityPack.HtmlNodeType.Text)
                         .Select(n => n.InnerText.Trim())
                         .FirstOrDefault(t => !string.IsNullOrWhiteSpace(t));
                     if (!string.IsNullOrWhiteSpace(rawText))
                         name = System.Net.WebUtility.HtmlDecode(rawText);
+                }
+
+                // Tentative 2 : via le lien du jeu
+                if (name == $"App {appId}")
+                {
+                    var titleLink = node.SelectSingleNode(".//a[contains(@href,'gamecards')]");
+                    if (titleLink != null)
+                    {
+                        var t = titleLink.InnerText.Trim();
+                        if (!string.IsNullOrWhiteSpace(t) && t != "View Badge")
+                            name = System.Net.WebUtility.HtmlDecode(t);
+                    }
+                }
+
+                // Tentative 3 : nettoyage du InnerText complet du badge_title
+                if (name == $"App {appId}" && nameNode != null)
+                {
+                    var full = nameNode.InnerText.Trim();
+                    var firstLine = full.Split('\n', '\r').FirstOrDefault(l => !string.IsNullOrWhiteSpace(l))?.Trim();
+                    if (!string.IsNullOrWhiteSpace(firstLine))
+                        name = System.Net.WebUtility.HtmlDecode(firstLine);
                 }
 
                 // Get hours played

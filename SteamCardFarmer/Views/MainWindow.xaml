@@ -214,21 +214,22 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Summary counts -->
+                            <!-- Summary + Tri -->
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal" Margin="0,0,20,0">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
                                     <TextBlock Text="🎮 " FontSize="16"/>
                                     <TextBlock Foreground="{StaticResource TextDimBrush}" FontSize="13">
                                         <Run Text="{Binding TotalGames}"/> <Run Text=" jeu(x)"/>
                                     </TextBlock>
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,20,0">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
                                     <TextBlock Text="🃏 " FontSize="16"/>
                                     <TextBlock Foreground="{StaticResource TextDimBrush}" FontSize="13">
                                         <Run Text="{Binding TotalCards}"/> <Run Text=" carte(s)"/>
                                     </TextBlock>
                                 </StackPanel>
-                                <TextBlock Text="{Binding TimeUntilCheckText}"
+
+<TextBlock Text="{Binding TimeUntilCheckText}"
                                            Foreground="{StaticResource AccentBrush}" FontSize="12"
                                            VerticalAlignment="Center"
                                            Visibility="{Binding IsIdling, Converter={StaticResource BoolToVis}}"/>
@@ -236,6 +237,8 @@
 
                             <!-- Action buttons -->
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <Button Content="📋" Style="{StaticResource SteamButton}" Padding="10,6"
+                                        Click="History_Click" Margin="0,0,8,0" ToolTip="Historique"/>
                                 <Button Content="{Binding Loc.Refresh}" Style="{StaticResource SteamButton}"
                                         Click="Refresh_Click" Margin="0,0,8,0"
                                         IsEnabled="{Binding IsNotIdling}"/>
@@ -352,15 +355,17 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="50"/>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="100"/>
                                     <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="70"/>
                                     <ColumnDefinition Width="50"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Text="{Binding Loc.ImageCol}" Foreground="{StaticResource TextDimBrush}" FontSize="10"/>
                                 <TextBlock Grid.Column="1" Text="{Binding Loc.GameCol}" Foreground="{StaticResource TextDimBrush}" FontSize="10"/>
                                 <TextBlock Grid.Column="2" Text="{Binding Loc.CardsCol}" Foreground="{StaticResource TextDimBrush}" FontSize="10" HorizontalAlignment="Center"/>
                                 <TextBlock Grid.Column="3" Text="{Binding Loc.HoursCol}" Foreground="{StaticResource TextDimBrush}" FontSize="10" HorizontalAlignment="Center"/>
-                                <TextBlock Grid.Column="4" Text="{Binding Loc.PrioCol}" Foreground="{StaticResource TextDimBrush}" FontSize="10" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="4" Text="💰 VALEUR" Foreground="{StaticResource TextDimBrush}" FontSize="10" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="5" Text="{Binding Loc.PrioCol}" Foreground="{StaticResource TextDimBrush}" FontSize="10" HorizontalAlignment="Center"/>
                             </Grid>
                         </Border>
 
@@ -389,8 +394,9 @@
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="60"/>
                                                     <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="100"/>
                                                     <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="70"/>
+                                                    <ColumnDefinition Width="70"/>
                                                     <ColumnDefinition Width="50"/>
                                                 </Grid.ColumnDefinitions>
 
@@ -428,12 +434,19 @@
                                                 <TextBlock Grid.Column="3"
                                                            Text="{Binding HoursPlayed, StringFormat='{}{0:F1}h'}"
                                                            Foreground="{StaticResource TextDimBrush}"
-                                                           FontSize="13"
+                                                           FontSize="13" HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+
+                                                <!-- Price -->
+                                                <TextBlock Grid.Column="4"
+                                                           Text="{Binding PriceText}"
+                                                           Foreground="{StaticResource GreenBrush}"
+                                                           FontSize="12" FontWeight="SemiBold"
                                                            HorizontalAlignment="Center"
                                                            VerticalAlignment="Center"/>
 
                                                 <!-- Priority button -->
-                                                <Button Grid.Column="4"
+                                                <Button Grid.Column="5"
                                                         Content="⬆"
                                                         ToolTip="Passer en priorité"
                                                         HorizontalAlignment="Center"

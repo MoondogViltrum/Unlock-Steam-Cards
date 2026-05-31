@@ -18,8 +18,11 @@ namespace SteamCardFarmer.Models
 
         public string StringId => AppId.ToString();
 
+        public double AveragePrice { get; set; }
+        public string PriceText => AveragePrice > 0 ? $"{AveragePrice:F2}€" : "-";
         public string RemainingCardsText => $"{RemainingCards} 🃏";
         public string HoursPlayedText => $"{HoursPlayed:F1}h";
+        public double EstimatedValue => AveragePrice * RemainingCards;
 
         public void StartIdle(string steamIdlePath)
         {
@@ -48,8 +51,8 @@ namespace SteamCardFarmer.Models
             {
                 _idleProcess = null;
                 throw new Exception(
-                    $"steam-idle.exe a crashé immédiatement.\n" +
-                    $"Vérifie que steam_api.dll est dans :\n{workingDir}");
+                    $"steam-idle.exe a crashé.\n" +
+                    $"Vérifie que steam_api64.dll est dans :\n{workingDir}");
             }
         }
 

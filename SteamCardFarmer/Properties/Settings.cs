@@ -41,5 +41,29 @@ namespace SteamCardFarmer.Properties
             get => (string)this[nameof(Language)];
             set => this[nameof(Language)] = value;
         }
+
+        [UserScopedSetting]
+        [DefaultSettingValue("true")]
+        public bool SoundEnabled
+        {
+            get => (bool)this[nameof(SoundEnabled)];
+            set => this[nameof(SoundEnabled)] = value;
+        }
+
+        [UserScopedSetting]
+        [DefaultSettingValue("100")]
+        public int SoundVolume
+        {
+            get => (int)this[nameof(SoundVolume)];
+            set => this[nameof(SoundVolume)] = value;
+        }
+
+        [UserScopedSetting]
+        [DefaultSettingValue("soft")]
+        public string SoundKey
+        {
+            get => (string)this[nameof(SoundKey)];
+            set => this[nameof(SoundKey)] = value;
+        }
     }
 }
